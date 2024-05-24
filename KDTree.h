@@ -71,7 +71,7 @@ public:
     Node<T> *root_node;
     int deactivate_nodes_num;
 
-private:
+protected:
     std::vector<float> k_nearest_dists;
     std::vector<T *> k_nearest_pts;
 };

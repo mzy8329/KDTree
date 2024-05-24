@@ -36,7 +36,7 @@ KDTree<T>::KDTree(std::vector<T> _data_list, int _split_dims)
     {
         data_ptr_list.push_back(&itr);
     }
-    setData(_split_dims, data_ptr_list);
+    setData(data_ptr_list, _split_dims);
 }
 
 template <typename T>
