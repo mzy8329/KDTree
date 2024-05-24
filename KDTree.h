@@ -47,11 +47,11 @@ public:
     void removeNode(T *_node);
 
     T *getNearestPoint(T *_pt);
-    std::vector<T *> getPointsInRange(T *_pt, float _range, int _k = -1);
+    std::vector<T *> getPointsInRange(T *_pt, float _range);
     std::vector<T *> getKNearestPoints(T *_pt, int _k);
 
 protected:
-    void getPointsInRangeInBranch(T *_pt, float _range, Node<T> *_branch_node, Node<T> *_start_node = nullptr, int _k = -1);
+    void getPointsInRangeInBranch(T *_pt, float _range, Node<T> *_branch_node, Node<T> *_start_node = nullptr);
     void getKNearestPointsInBranch(T *_pt, int _k, Node<T> *_branch_node, Node<T> *_start_node = nullptr);
 
     Node<T> *findNearestLeaf(T *_pt, Node<T> *_branch_node);

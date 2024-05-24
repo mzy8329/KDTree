@@ -146,7 +146,7 @@ T *KDTree<T>::getNearestPoint(T *_pt)
 }
 
 template <typename T>
-std::vector<T *> KDTree<T>::getPointsInRange(T *_pt, float _range, int _k)
+std::vector<T *> KDTree<T>::getPointsInRange(T *_pt, float _range)
 {
     if (_range <= 0)
     {
@@ -213,7 +213,7 @@ std::vector<T *> KDTree<T>::getKNearestPoints(T *_pt, int _k)
 
 // protected -------------------- find neighbor points --------------------//
 template <typename T>
-void KDTree<T>::getPointsInRangeInBranch(T *_pt, float _range, Node<T> *_branch_node, Node<T> *_start_node, int _k)
+void KDTree<T>::getPointsInRangeInBranch(T *_pt, float _range, Node<T> *_branch_node, Node<T> *_start_node)
 {
     Node<T> *temp_node = _start_node;
     Node<T> *temp_node_last = nullptr;
@@ -242,13 +242,6 @@ void KDTree<T>::getPointsInRangeInBranch(T *_pt, float _range, Node<T> *_branch_
             {
                 k_nearest_pts.push_back(temp_node->param);
                 visited_node.push_back(temp_node);
-                if (_k > 0)
-                {
-                    if (k_nearest_pts.size() >= _k)
-                    {
-                        return;
-                    }
-                }
             }
         }
 
@@ -260,7 +253,7 @@ void KDTree<T>::getPointsInRangeInBranch(T *_pt, float _range, Node<T> *_branch_
             continue;
         }
 
-        if ((k_nearest_dists.size() < _k || abs(_pt->data[temp_node->split_dim] - temp_node->param->data[temp_node->split_dim]) < _range))
+        if (abs(_pt->data[temp_node->split_dim] - temp_node->param->data[temp_node->split_dim]) < _range)
         {
             visited_node.push_back(temp_node);
             temp_node = findNearestLeaf(_pt, temp_node_another);
@@ -411,10 +404,12 @@ Node<T> *KDTree<T>::buildTree(std::vector<T *> *_data_ptr_list, Node<T> *_parent
         node->parent = _parent_node;
         return node;
     }
+
     Eigen::VectorXf varience = calcVarience(_data_ptr_list);
 
     int s_dim;
     varience.segment(0, split_dim).maxCoeff(&s_dim);
+
     sort_vector_list(_data_ptr_list, s_dim);
 
     std::vector<T *> left_sub_tree;
@@ -529,7 +524,7 @@ Eigen::VectorXf KDTree<T>::calcVarience(std::vector<T *> *_data_ptr_list)
 template <typename T>
 bool KDTree<T>::compareByDim(const T *_a, const T *_b, int _dim)
 {
-    return (_a->data[_dim] <= _b->data[_dim]);
+    return (_a->data[_dim] < _b->data[_dim]);
 }
 
 template <typename T>
