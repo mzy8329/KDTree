@@ -14,29 +14,14 @@ template <typename T>
 KDTree<T>::KDTree(std::vector<T *> _data_ptr_list, int _split_dims)
 {
     root_node = nullptr;
-
-    k_nearest_dists.reserve(100);
-    k_nearest_pts.reserve(100);
-
-    data_ptr_list = _data_ptr_list;
-    setData(_split_dims, data_ptr_list);
+    setData(_split_dims, _data_ptr_list);
 }
 
 template <typename T>
 KDTree<T>::KDTree(std::vector<T> _data_list, int _split_dims)
 {
     root_node = nullptr;
-
-    k_nearest_dists.reserve(100);
-    k_nearest_pts.reserve(100);
-
-    data_list = _data_list;
-    data_ptr_list.clear();
-    for (auto &itr : data_list)
-    {
-        data_ptr_list.push_back(&itr);
-    }
-    setData(data_ptr_list, _split_dims);
+    setData(_data_list, _split_dims);
 }
 
 template <typename T>
@@ -49,6 +34,11 @@ KDTree<T>::~KDTree()
 template <typename T>
 void KDTree<T>::setData(std::vector<T *> _data_ptr_list, int _split_dims)
 {
+    k_nearest_dists.reserve(100);
+    k_nearest_pts.reserve(100);
+
+    data_ptr_list = _data_ptr_list;
+
     clear();
     if (_data_ptr_list.size() <= 0)
     {
@@ -70,6 +60,18 @@ void KDTree<T>::setData(std::vector<T *> _data_ptr_list, int _split_dims)
     k_nearest_pts.reserve(100);
 
     root_node = buildTree(&_data_ptr_list, nullptr);
+}
+
+template <typename T>
+void KDTree<T>::setData(std::vector<T> _data_list, int _split_dims)
+{
+    data_list = _data_list;
+    data_ptr_list.clear();
+    for (auto &itr : data_list)
+    {
+        data_ptr_list.push_back(&itr);
+    }
+    setData(data_ptr_list, _split_dims);
 }
 
 template <typename T>
@@ -206,12 +208,6 @@ std::vector<T *> KDTree<T>::getKNearestPoints(T *_pt, int _k)
     {
         getKNearestPointsInBranch(_pt, _k, root_node, temp_node);
     }
-
-    int max_index = std::max_element(k_nearest_dists.begin(), k_nearest_dists.end()) - k_nearest_dists.begin();
-    T *temp = k_nearest_pts[max_index];
-    k_nearest_pts.erase(k_nearest_pts.begin() + max_index);
-    k_nearest_pts.push_back(temp);
-
     return k_nearest_pts;
 }
 
@@ -219,12 +215,12 @@ std::vector<T *> KDTree<T>::getKNearestPoints(T *_pt, int _k)
 template <typename T>
 void KDTree<T>::getPointsInRangeInBranch(T *_pt, float _range, Node<T> *_branch_node, Node<T> *_start_node, int _k)
 {
-    T *temp_node = _start_node;
-    T *temp_node_last = nullptr;
-    T *temp_node_another = nullptr;
+    Node<T> *temp_node = _start_node;
+    Node<T> *temp_node_last = nullptr;
+    Node<T> *temp_node_another = nullptr;
     if (_start_node == nullptr)
     {
-        temp_node = findNearstLeaf(_pt, _branch_node);
+        temp_node = findNearestLeaf(_pt, _branch_node);
     }
 
     std::vector<Node<T> *> visited_node;
@@ -244,7 +240,7 @@ void KDTree<T>::getPointsInRangeInBranch(T *_pt, float _range, Node<T> *_branch_
             temp_dist = calcDistance(&temp_node->param->data, &_pt->data, split_dim);
             if (temp_dist <= _range)
             {
-                k_nearest_pts.push_back(temp_node);
+                k_nearest_pts.push_back(temp_node->param);
                 visited_node.push_back(temp_node);
                 if (_k > 0)
                 {
@@ -256,7 +252,7 @@ void KDTree<T>::getPointsInRangeInBranch(T *_pt, float _range, Node<T> *_branch_
             }
         }
 
-        temp_node_another = findAnotherSubranch(temp_node, temp_node_last);
+        temp_node_another = findAnotherSuBranch(temp_node, temp_node_last);
         if (temp_node_another == nullptr || std::find(visited_node.begin(), visited_node.end(), temp_node_another) != visited_node.end())
         { // no another branch
             temp_node_last = temp_node;
@@ -267,7 +263,7 @@ void KDTree<T>::getPointsInRangeInBranch(T *_pt, float _range, Node<T> *_branch_
         if ((k_nearest_dists.size() < _k || abs(_pt->data[temp_node->split_dim] - temp_node->param->data[temp_node->split_dim]) < _range))
         {
             visited_node.push_back(temp_node);
-            temp_node = findNearstLeaf(_pt, temp_node_another);
+            temp_node = findNearestLeaf(_pt, temp_node_another);
             temp_node_last = nullptr;
         }
         else

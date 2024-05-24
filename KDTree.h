@@ -42,6 +42,7 @@ public:
     ~KDTree();
 
     void setData(std::vector<T *> _data_ptr_list, int _split_dims = -1);
+    void setData(std::vector<T> _data_ptr_list, int _split_dims = -1);
     void insertNode(T *_node);
     void removeNode(T *_node);
 
