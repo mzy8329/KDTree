@@ -11,7 +11,7 @@ float calcDistance(Eigen::VectorXf *_p1, Eigen::VectorXf *_p2, int _dim)
 }
 
 template <typename T>
-KDTree<T>::KDTree(int _split_dims, std::vector<T *> _data_ptr_list)
+KDTree<T>::KDTree(std::vector<T *> _data_ptr_list, int _split_dims)
 {
     root_node = nullptr;
 
@@ -23,7 +23,7 @@ KDTree<T>::KDTree(int _split_dims, std::vector<T *> _data_ptr_list)
 }
 
 template <typename T>
-KDTree<T>::KDTree(int _split_dims, std::vector<T> _data_list)
+KDTree<T>::KDTree(std::vector<T> _data_list, int _split_dims)
 {
     root_node = nullptr;
 
@@ -47,11 +47,23 @@ KDTree<T>::~KDTree()
 
 // public -------------------- build tree --------------------//
 template <typename T>
-void KDTree<T>::setData(int _split_dims, std::vector<T *> _data_ptr_list)
+void KDTree<T>::setData(std::vector<T *> _data_ptr_list, int _split_dims)
 {
     clear();
+    if (_data_ptr_list.size() <= 0)
+    {
+        return;
+    }
 
-    split_dim = _split_dims;
+    if (_split_dims == -1)
+    {
+        split_dim = _data_ptr_list[0]->data.size();
+    }
+    else
+    {
+        split_dim = _split_dims;
+    }
+
     deactivate_nodes_num = 0;
 
     k_nearest_dists.reserve(100);
