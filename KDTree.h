@@ -43,8 +43,8 @@ public:
 
     void setData(std::vector<T *> _data_ptr_list, int _split_dims = -1);
     void setData(std::vector<T> _data_ptr_list, int _split_dims = -1);
-    void insertNode(T *_node);
-    void removeNode(T *_node);
+    void insertNode(T *_param);
+    void removeNode(T *_param, bool _same_address = false);
 
     T *getNearestPoint(T *_pt);
     std::vector<T *> getPointsInRange(T *_pt, float _range);
@@ -54,7 +54,7 @@ protected:
     void getPointsInRangeInBranch(T *_pt, float _range, Node<T> *_branch_node, Node<T> *_start_node = nullptr);
     void getKNearestPointsInBranch(T *_pt, int _k, Node<T> *_branch_node, Node<T> *_start_node = nullptr);
 
-    Node<T> *findNearestLeaf(T *_pt, Node<T> *_branch_node);
+    Node<T> *findNearestLeaf(T *_pt, Node<T> *_branch_node, bool _same_address = false);
     Node<T> *findAnotherSuBranch(Node<T> *_parent, Node<T> *_sub_node);
 
     void clear();

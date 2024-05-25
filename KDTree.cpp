@@ -77,15 +77,29 @@ void KDTree<T>::setData(std::vector<T> _data_list, int _split_dims)
 template <typename T>
 void KDTree<T>::insertNode(T *_param)
 {
+    if (root_node == nullptr)
+    {
+        root_node = new Node<T>(_param, 0);
+        return;
+    }
+
     Node<T> *temp_node = root_node;
-    while (temp_node->left != nullptr && temp_node->right != nullptr)
+    while (temp_node->left != nullptr || temp_node->right != nullptr)
     {
         if (_param->data[temp_node->split_dim] <= temp_node->param->data[temp_node->split_dim])
         {
-            temp_node = temp_node->right;
+            if (temp_node->left == nullptr)
+            {
+                break;
+            }
+            temp_node = temp_node->left;
         }
         else
         {
+            if (temp_node->right == nullptr)
+            {
+                break;
+            }
             temp_node = temp_node->right;
         }
     }
@@ -103,16 +117,30 @@ void KDTree<T>::insertNode(T *_param)
 }
 
 template <typename T>
-void KDTree<T>::removeNode(T *_node)
+void KDTree<T>::removeNode(T *_node, bool _same_address)
 {
-    Node<T> *temp_node = findNearestLeaf(_node, root_node);
+    Node<T> *temp_node = findNearestLeaf(_node, root_node, _same_address);
+    if (temp_node == root_node)
+    {
+        delete root_node;
+        root_node = nullptr;
+        return;
+    }
+
     if (temp_node->param->data == _node->data)
     {
-        if (temp_node->left == nullptr && temp_node->right == nullptr && temp_node != root_node)
+        if (temp_node->left == nullptr && temp_node->right == nullptr)
         {
-            if (temp_node == temp_node->parent->left)
+            if (temp_node->parent->left != nullptr)
             {
-                temp_node->parent->left = nullptr;
+                if (temp_node == temp_node->parent->left)
+                {
+                    temp_node->parent->left = nullptr;
+                }
+                else
+                {
+                    temp_node->parent->right = nullptr;
+                }
             }
             else
             {
@@ -134,7 +162,7 @@ void KDTree<T>::removeNode(T *_node)
 template <typename T>
 T *KDTree<T>::getNearestPoint(T *_pt)
 {
-    std::vector<T *> temp_ans = getPointsInRange(_pt, 9999, 1);
+    std::vector<T *> temp_ans = getKNearestPoints(_pt, 1);
     if (temp_ans.size() > 0)
     {
         return temp_ans[0];
@@ -341,22 +369,41 @@ void KDTree<T>::getKNearestPointsInBranch(T *_pt, int _k, Node<T> *_branch_node,
 
 // protected -------------------- find neighbor points --------------------//
 template <typename T>
-Node<T> *KDTree<T>::findNearestLeaf(T *_pt, Node<T> *_branch_node)
+Node<T> *KDTree<T>::findNearestLeaf(T *_pt, Node<T> *_branch_node, bool _same_address)
 {
     Node<T> *temp_node = _branch_node;
+    if (_branch_node == nullptr)
+    {
+        return nullptr;
+    }
+
     while (temp_node->left != nullptr || temp_node->right != nullptr)
     {
-        if (_pt->data == temp_node->param->data)
+        if (_same_address)
         {
-            if (!temp_node->deactivate)
+            if (_pt == temp_node->param)
             {
-                return temp_node;
+                if (!temp_node->deactivate)
+                {
+                    return temp_node;
+                }
+            }
+        }
+        else
+        {
+            if (_pt->data == temp_node->param->data)
+            {
+                if (!temp_node->deactivate)
+                {
+                    return temp_node;
+                }
             }
         }
 
         if (_pt->data[temp_node->split_dim] <= temp_node->param->data[temp_node->split_dim])
         {
-            temp_node = temp_node->left;
+            // temp_node = temp_node->left;
+            temp_node = temp_node->left == nullptr ? temp_node->right : temp_node->left;
         }
         else
         {
