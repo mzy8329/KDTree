@@ -53,11 +53,7 @@ void KDTree<T>::setData(std::vector<T *> _data_ptr_list, int _split_dims)
     {
         split_dim = _split_dims;
     }
-
     deactivate_nodes_num = 0;
-
-    k_nearest_dists.reserve(100);
-    k_nearest_pts.reserve(100);
 
     root_node = buildTree(&_data_ptr_list, nullptr);
 }
@@ -120,6 +116,11 @@ template <typename T>
 void KDTree<T>::removeNode(T *_node, bool _same_address)
 {
     Node<T> *temp_node = findNearestLeaf(_node, root_node, _same_address);
+    if (temp_node == nullptr)
+    {
+        return;
+    }
+
     if (temp_node == root_node)
     {
         delete root_node;
