@@ -38,7 +38,6 @@ void KDTree<T>::setData(std::vector<T *> _data_ptr_list, int _split_dims)
     k_nearest_pts.reserve(100);
 
     data_ptr_list = _data_ptr_list;
-
     clear();
     if (_data_ptr_list.size() <= 0)
     {
@@ -123,9 +122,17 @@ void KDTree<T>::removeNode(T *_node, bool _same_address)
 
     if (temp_node == root_node)
     {
-        delete root_node;
-        root_node = nullptr;
-        return;
+        if (root_node->left == nullptr && root_node->right == nullptr)
+        {
+            delete root_node;
+            root_node = nullptr;
+            return;
+        }
+        else
+        {
+            root_node->deactivate = true;
+            deactivate_nodes_num++;
+        }
     }
 
     bool matched = false;
@@ -464,15 +471,18 @@ Node<T> *KDTree<T>::buildTree(std::vector<T *> *_data_ptr_list, Node<T> *_parent
     }
 
     Eigen::VectorXf varience = calcVarience(_data_ptr_list);
+    if (std::abs(varience.size()) > 1e2)
+    {
+        return nullptr;
+    }
 
     int s_dim = 0;
     varience.segment(0, split_dim).maxCoeff(&s_dim);
-
     sort_vector_list(_data_ptr_list, s_dim);
 
     std::vector<T *> left_sub_tree;
     std::vector<T *> right_sub_tree;
-    Node<T> *node;
+    Node<T> *node = nullptr;
 
     if (data_size % 2 != 0)
     {
