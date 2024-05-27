@@ -128,7 +128,17 @@ void KDTree<T>::removeNode(T *_node, bool _same_address)
         return;
     }
 
-    if (temp_node->param->data == _node->data)
+    bool matched = false;
+    if (_same_address)
+    {
+        matched = temp_node->param == _node;
+    }
+    else
+    {
+        matched = temp_node->param->data == _node->data;
+    }
+
+    if (matched)
     {
         if (temp_node->left == nullptr && temp_node->right == nullptr)
         {
@@ -455,7 +465,7 @@ Node<T> *KDTree<T>::buildTree(std::vector<T *> *_data_ptr_list, Node<T> *_parent
 
     Eigen::VectorXf varience = calcVarience(_data_ptr_list);
 
-    int s_dim;
+    int s_dim = 0;
     varience.segment(0, split_dim).maxCoeff(&s_dim);
 
     sort_vector_list(_data_ptr_list, s_dim);
@@ -463,6 +473,7 @@ Node<T> *KDTree<T>::buildTree(std::vector<T *> *_data_ptr_list, Node<T> *_parent
     std::vector<T *> left_sub_tree;
     std::vector<T *> right_sub_tree;
     Node<T> *node;
+
     if (data_size % 2 != 0)
     {
         for (int i = 0; i < data_size / 2; i++)
