@@ -1,5 +1,5 @@
 # KDTree
-该KDTree的输入为*std::vector\<*T\>, 其中T为任意 <span style="color:red">包含数据成员为 Eigen::VectorXf data</span> 的类
+该KDTree的输入为std::vector\<T*\>, 其中T为任意 <span style="color:red">包含数据成员为 Eigen::VectorXf data</span> 的类
 ### 特点
 1. 输入为对象的地址，返回值为对象的指针，可直接对对象进行修改
 2. 针对不同问题，仅需声明不同的对象（包含data），无需额外进行匹配
