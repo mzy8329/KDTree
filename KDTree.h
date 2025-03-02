@@ -13,7 +13,7 @@ template <typename T>
 class Node
 {
 public:
-    Node(T* _param, int _split_dim) : param(_param), split_dim(_split_dim)
+    Node(T* _param, int _split_dim) : param(_param), split_dim_(_split_dim)
     {
         left = nullptr;
         right = nullptr;
@@ -24,7 +24,7 @@ public:
     ~Node() { ; }
 
     T* param;
-    int split_dim;
+    int split_dim_;
     bool deactivate;
 
     Node<T>* left;
@@ -36,7 +36,7 @@ template <typename T>
 class KDTree
 {
 public:
-    KDTree() { root_node = nullptr; }
+    KDTree() { root_node_ = nullptr; }
     KDTree(std::vector<T*> _data_ptr_list, int _split_dims = -1);
     KDTree(std::vector<T> _data_list, int _split_dims = -1);
     ~KDTree();
@@ -66,11 +66,11 @@ protected:
     void sort_vector_list(std::vector<T*>* _datas, int splid_dim);
 
 public:
-    std::vector<T> data_list;
-    std::vector<T*> data_ptr_list;
-    int split_dim;
-    Node<T>* root_node;
-    int deactivate_nodes_num;
+    std::vector<T> data_list_;
+    std::vector<T*> data_ptr_list_;
+    int split_dim_;
+    Node<T>* root_node_;
+    int deactivate_nodes_num_;
 
 protected:
     std::vector<float> k_nearest_dists;
@@ -90,21 +90,21 @@ float calcDistance(Eigen::VectorXf* _p1, Eigen::VectorXf* _p2, int _dim)
 template <typename T>
 KDTree<T>::KDTree(std::vector<T*> _data_ptr_list, int _split_dims)
 {
-    root_node = nullptr;
+    root_node_ = nullptr;
     setData(_split_dims, _data_ptr_list);
 }
 
 template <typename T>
 KDTree<T>::KDTree(std::vector<T> _data_list, int _split_dims)
 {
-    root_node = nullptr;
+    root_node_ = nullptr;
     setData(_data_list, _split_dims);
 }
 
 template <typename T>
 KDTree<T>::~KDTree()
 {
-    deleteBranch(root_node);
+    deleteBranch(root_node_);
 }
 
 // public -------------------- build tree --------------------//
@@ -114,7 +114,7 @@ void KDTree<T>::setData(std::vector<T*> _data_ptr_list, int _split_dims)
     k_nearest_dists.reserve(100);
     k_nearest_pts.reserve(100);
 
-    data_ptr_list = _data_ptr_list;
+    data_ptr_list_ = _data_ptr_list;
     clear();
     if (_data_ptr_list.size() <= 0)
     {
@@ -123,42 +123,42 @@ void KDTree<T>::setData(std::vector<T*> _data_ptr_list, int _split_dims)
 
     if (_split_dims == -1)
     {
-        split_dim = _data_ptr_list[0]->data.size();
+        split_dim_ = _data_ptr_list[0]->data_.size();
     }
     else
     {
-        split_dim = _split_dims;
+        split_dim_ = _split_dims;
     }
-    deactivate_nodes_num = 0;
+    deactivate_nodes_num_ = 0;
 
-    root_node = buildTree(&_data_ptr_list, nullptr);
+    root_node_ = buildTree(&_data_ptr_list, nullptr);
 }
 
 template <typename T>
 void KDTree<T>::setData(std::vector<T> _data_list, int _split_dims)
 {
-    data_list = _data_list;
-    data_ptr_list.clear();
-    for (auto& itr : data_list)
+    data_list_ = _data_list;
+    data_ptr_list_.clear();
+    for (auto& itr : data_list_)
     {
-        data_ptr_list.push_back(&itr);
+        data_ptr_list_.push_back(&itr);
     }
-    setData(data_ptr_list, _split_dims);
+    setData(data_ptr_list_, _split_dims);
 }
 
 template <typename T>
 void KDTree<T>::insertNode(T* _param)
 {
-    if (root_node == nullptr)
+    if (root_node_ == nullptr)
     {
-        root_node = new Node<T>(_param, 0);
+        root_node_ = new Node<T>(_param, 0);
         return;
     }
 
-    Node<T>* temp_node = root_node;
+    Node<T>* temp_node = root_node_;
     while (temp_node->left != nullptr || temp_node->right != nullptr)
     {
-        if (_param->data[temp_node->split_dim] <= temp_node->param->data[temp_node->split_dim])
+        if (_param->data_[temp_node->split_dim_] <= temp_node->param->data_[temp_node->split_dim_])
         {
             if (temp_node->left == nullptr)
             {
@@ -176,9 +176,9 @@ void KDTree<T>::insertNode(T* _param)
         }
     }
 
-    Node<T>* node = new Node<T>(_param, temp_node->split_dim);
+    Node<T>* node = new Node<T>(_param, temp_node->split_dim_);
     node->parent = temp_node;
-    if (_param->data[temp_node->split_dim] <= temp_node->param->data[temp_node->split_dim])
+    if (_param->data_[temp_node->split_dim_] <= temp_node->param->data_[temp_node->split_dim_])
     {
         temp_node->left = node;
     }
@@ -191,24 +191,24 @@ void KDTree<T>::insertNode(T* _param)
 template <typename T>
 void KDTree<T>::removeNode(T* _node, bool _same_address)
 {
-    Node<T>* temp_node = findNearestLeaf(_node, root_node, _same_address);
+    Node<T>* temp_node = findNearestLeaf(_node, root_node_, _same_address);
     if (temp_node == nullptr)
     {
         return;
     }
 
-    if (temp_node == root_node)
+    if (temp_node == root_node_)
     {
-        if (root_node->left == nullptr && root_node->right == nullptr)
+        if (root_node_->left == nullptr && root_node_->right == nullptr)
         {
-            delete root_node;
-            root_node = nullptr;
+            delete root_node_;
+            root_node_ = nullptr;
             return;
         }
         else
         {
-            root_node->deactivate = true;
-            deactivate_nodes_num++;
+            root_node_->deactivate = true;
+            deactivate_nodes_num_++;
         }
     }
 
@@ -219,7 +219,7 @@ void KDTree<T>::removeNode(T* _node, bool _same_address)
     }
     else
     {
-        matched = temp_node->param->data == _node->data;
+        matched = temp_node->param->data_ == _node->data_;
     }
 
     if (matched)
@@ -248,7 +248,7 @@ void KDTree<T>::removeNode(T* _node, bool _same_address)
         else
         {
             temp_node->deactivate = true;
-            deactivate_nodes_num++;
+            deactivate_nodes_num_++;
         }
     }
 }
@@ -278,8 +278,8 @@ std::vector<T*> KDTree<T>::getPointsInRange(T* _pt, float _range)
 
     k_nearest_dists.clear();
     k_nearest_pts.clear();
-    Node<T>* temp_node = findNearestLeaf(_pt, root_node);
-    if (_pt->data == temp_node->param->data)
+    Node<T>* temp_node = findNearestLeaf(_pt, root_node_);
+    if (_pt->data_ == temp_node->param->data_)
     {
         Node<T>* fit_node = temp_node;
         if (fit_node->left != nullptr)
@@ -292,11 +292,11 @@ std::vector<T*> KDTree<T>::getPointsInRange(T* _pt, float _range)
             Node<T>* right_leaf_node = findNearestLeaf(_pt, fit_node->right);
             getPointsInRangeInBranch(_pt, _range, right_leaf_node);
         }
-        getPointsInRangeInBranch(_pt, _range, root_node, fit_node->parent);
+        getPointsInRangeInBranch(_pt, _range, root_node_, fit_node->parent);
     }
     else
     {
-        getPointsInRangeInBranch(_pt, _range, root_node, temp_node);
+        getPointsInRangeInBranch(_pt, _range, root_node_, temp_node);
     }
     return k_nearest_pts;
 }
@@ -304,15 +304,15 @@ std::vector<T*> KDTree<T>::getPointsInRange(T* _pt, float _range)
 template <typename T>
 std::vector<T*> KDTree<T>::getKNearestPoints(T* _pt, int _k)
 {
-    if (_k > data_ptr_list.size() || _k == 0 || data_ptr_list.size() == 0)
+    if (_k > data_ptr_list_.size() || _k == 0 || data_ptr_list_.size() == 0)
     {
         return {};
     }
 
     k_nearest_dists.clear();
     k_nearest_pts.clear();
-    Node<T>* temp_node = findNearestLeaf(_pt, root_node);
-    if (_pt->data == temp_node->param->data && !temp_node->deactivate)
+    Node<T>* temp_node = findNearestLeaf(_pt, root_node_);
+    if (_pt->data_ == temp_node->param->data_ && !temp_node->deactivate)
     {
         Node<T>* fit_node = temp_node;
         if (fit_node->left != nullptr)
@@ -325,11 +325,11 @@ std::vector<T*> KDTree<T>::getKNearestPoints(T* _pt, int _k)
             Node<T>* right_leaf_node = findNearestLeaf(_pt, fit_node->right);
             getKNearestPointsInBranch(_pt, _k, right_leaf_node);
         }
-        getKNearestPointsInBranch(_pt, _k, root_node, fit_node->parent);
+        getKNearestPointsInBranch(_pt, _k, root_node_, fit_node->parent);
     }
     else
     {
-        getKNearestPointsInBranch(_pt, _k, root_node, temp_node);
+        getKNearestPointsInBranch(_pt, _k, root_node_, temp_node);
     }
     return k_nearest_pts;
 }
@@ -360,7 +360,7 @@ void KDTree<T>::getPointsInRangeInBranch(T* _pt, float _range, Node<T>* _branch_
 
         if (!temp_node->deactivate)
         {
-            temp_dist = calcDistance(&temp_node->param->data, &_pt->data, split_dim);
+            temp_dist = calcDistance(&temp_node->param->data_, &_pt->data_, split_dim_);
             if (temp_dist <= _range)
             {
                 k_nearest_pts.push_back(temp_node->param);
@@ -376,7 +376,7 @@ void KDTree<T>::getPointsInRangeInBranch(T* _pt, float _range, Node<T>* _branch_
             continue;
         }
 
-        if (abs(_pt->data[temp_node->split_dim] - temp_node->param->data[temp_node->split_dim]) < _range)
+        if (abs(_pt->data_[temp_node->split_dim_] - temp_node->param->data_[temp_node->split_dim_]) < _range)
         {
             visited_node.push_back(temp_node);
             temp_node = findNearestLeaf(_pt, temp_node_another);
@@ -416,7 +416,7 @@ void KDTree<T>::getKNearestPointsInBranch(T* _pt, int _k, Node<T>* _branch_node,
 
         if (!temp_node->deactivate)
         {
-            temp_dist = calcDistance(&temp_node->param->data, &_pt->data, split_dim);
+            temp_dist = calcDistance(&temp_node->param->data_, &_pt->data_, split_dim_);
             if (k_nearest_dists.size() < _k)
             {
                 k_nearest_dists.push_back(temp_dist);
@@ -448,7 +448,7 @@ void KDTree<T>::getKNearestPointsInBranch(T* _pt, int _k, Node<T>* _branch_node,
 
         temp_index = std::max_element(k_nearest_dists.begin(), k_nearest_dists.end()) - k_nearest_dists.begin();
         if (k_nearest_dists.size() < _k ||
-            abs(_pt->data[temp_node->split_dim] - temp_node->param->data[temp_node->split_dim]) < k_nearest_dists[temp_index])
+            abs(_pt->data_[temp_node->split_dim_] - temp_node->param->data_[temp_node->split_dim_]) < k_nearest_dists[temp_index])
         {
             visited_node.push_back(temp_node);
             temp_node = findNearestLeaf(_pt, temp_node_another);
@@ -486,7 +486,7 @@ Node<T>* KDTree<T>::findNearestLeaf(T* _pt, Node<T>* _branch_node, bool _same_ad
         }
         else
         {
-            if (_pt->data == temp_node->param->data)
+            if (_pt->data_ == temp_node->param->data_)
             {
                 if (!temp_node->deactivate)
                 {
@@ -495,7 +495,7 @@ Node<T>* KDTree<T>::findNearestLeaf(T* _pt, Node<T>* _branch_node, bool _same_ad
             }
         }
 
-        if (_pt->data[temp_node->split_dim] <= temp_node->param->data[temp_node->split_dim])
+        if (_pt->data_[temp_node->split_dim_] <= temp_node->param->data_[temp_node->split_dim_])
         {
             // temp_node = temp_node->left;
             temp_node = temp_node->left == nullptr ? temp_node->right : temp_node->left;
@@ -529,7 +529,7 @@ Node<T>* KDTree<T>::findAnotherSuBranch(Node<T>* _parent, Node<T>* _sub_node)
 template <typename T>
 void KDTree<T>::clear()
 {
-    deleteBranch(root_node);
+    deleteBranch(root_node_);
 }
 
 template <typename T>
@@ -554,7 +554,7 @@ Node<T>* KDTree<T>::buildTree(std::vector<T*>* _data_ptr_list, Node<T>* _parent_
     }
 
     int s_dim = 0;
-    varience.segment(0, split_dim).maxCoeff(&s_dim);
+    varience.segment(0, split_dim_).maxCoeff(&s_dim);
     sort_vector_list(_data_ptr_list, s_dim);
 
     std::vector<T*> left_sub_tree;
@@ -639,7 +639,7 @@ void KDTree<T>::deleteBranch(Node<T>* _root_node)
     else
     {
         delete _root_node;
-        root_node = nullptr;
+        root_node_ = nullptr;
     }
 }
 
@@ -648,13 +648,13 @@ template <typename T>
 Eigen::VectorXf KDTree<T>::calcVarience(std::vector<T*>* _data_ptr_list)
 {
     int data_length = _data_ptr_list->size();
-    int data_dim = (*(_data_ptr_list->begin()))->data.size();
+    int data_dim = (*(_data_ptr_list->begin()))->data_.size();
 
     Eigen::VectorXf mean(data_dim);
     mean.setZero();
     for (auto& itr : *_data_ptr_list)
     {
-        mean += itr->data;
+        mean += itr->data_;
     }
     mean = mean / float(data_length);
 
@@ -662,7 +662,7 @@ Eigen::VectorXf KDTree<T>::calcVarience(std::vector<T*>* _data_ptr_list)
     varience.setZero();
     for (int i = 0; i < data_length; i++)
     {
-        varience += ((*(_data_ptr_list->begin() + i))->data - mean).cwiseProduct((*(_data_ptr_list->begin() + i))->data - mean);
+        varience += ((*(_data_ptr_list->begin() + i))->data_ - mean).cwiseProduct((*(_data_ptr_list->begin() + i))->data_ - mean);
     }
     return varience / float(data_length);
 }
@@ -670,7 +670,7 @@ Eigen::VectorXf KDTree<T>::calcVarience(std::vector<T*>* _data_ptr_list)
 template <typename T>
 bool KDTree<T>::compareByDim(const T* _a, const T* _b, int _dim)
 {
-    return (_a->data[_dim] < _b->data[_dim]);
+    return (_a->data_[_dim] < _b->data_[_dim]);
 }
 
 template <typename T>
