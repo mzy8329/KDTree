@@ -73,8 +73,8 @@ public:
     int deactivate_nodes_num_;
 
 protected:
-    std::vector<float> k_nearest_dists;
-    std::vector<T*> k_nearest_pts;
+    std::vector<float> k_nearest_dists_;
+    std::vector<T*> k_nearest_pts_;
 };
 
 float calcDistance(Eigen::VectorXf* _p1, Eigen::VectorXf* _p2, int _dim)
@@ -111,8 +111,8 @@ KDTree<T>::~KDTree()
 template <typename T>
 void KDTree<T>::setData(std::vector<T*> _data_ptr_list, int _split_dims)
 {
-    k_nearest_dists.reserve(100);
-    k_nearest_pts.reserve(100);
+    k_nearest_dists_.reserve(100);
+    k_nearest_pts_.reserve(100);
 
     data_ptr_list_ = _data_ptr_list;
     clear();
@@ -276,8 +276,8 @@ std::vector<T*> KDTree<T>::getPointsInRange(T* _pt, float _range)
         return {};
     }
 
-    k_nearest_dists.clear();
-    k_nearest_pts.clear();
+    k_nearest_dists_.clear();
+    k_nearest_pts_.clear();
     Node<T>* temp_node = findNearestLeaf(_pt, root_node_);
     if (_pt->data_ == temp_node->param->data_)
     {
@@ -298,7 +298,7 @@ std::vector<T*> KDTree<T>::getPointsInRange(T* _pt, float _range)
     {
         getPointsInRangeInBranch(_pt, _range, root_node_, temp_node);
     }
-    return k_nearest_pts;
+    return k_nearest_pts_;
 }
 
 template <typename T>
@@ -309,8 +309,8 @@ std::vector<T*> KDTree<T>::getKNearestPoints(T* _pt, int _k)
         return {};
     }
 
-    k_nearest_dists.clear();
-    k_nearest_pts.clear();
+    k_nearest_dists_.clear();
+    k_nearest_pts_.clear();
     Node<T>* temp_node = findNearestLeaf(_pt, root_node_);
     if (_pt->data_ == temp_node->param->data_ && !temp_node->deactivate)
     {
@@ -331,7 +331,7 @@ std::vector<T*> KDTree<T>::getKNearestPoints(T* _pt, int _k)
     {
         getKNearestPointsInBranch(_pt, _k, root_node_, temp_node);
     }
-    return k_nearest_pts;
+    return k_nearest_pts_;
 }
 
 // protected -------------------- find neighbor points --------------------//
@@ -363,7 +363,7 @@ void KDTree<T>::getPointsInRangeInBranch(T* _pt, float _range, Node<T>* _branch_
             temp_dist = calcDistance(&temp_node->param->data_, &_pt->data_, split_dim_);
             if (temp_dist <= _range)
             {
-                k_nearest_pts.push_back(temp_node->param);
+                k_nearest_pts_.push_back(temp_node->param);
                 visited_node.push_back(temp_node);
             }
         }
@@ -417,22 +417,22 @@ void KDTree<T>::getKNearestPointsInBranch(T* _pt, int _k, Node<T>* _branch_node,
         if (!temp_node->deactivate)
         {
             temp_dist = calcDistance(&temp_node->param->data_, &_pt->data_, split_dim_);
-            if (k_nearest_dists.size() < _k)
+            if (k_nearest_dists_.size() < _k)
             {
-                k_nearest_dists.push_back(temp_dist);
-                k_nearest_pts.push_back(temp_node->param);
+                k_nearest_dists_.push_back(temp_dist);
+                k_nearest_pts_.push_back(temp_node->param);
                 visited_node.push_back(temp_node);
             }
             else
             {
-                temp_index = std::max_element(k_nearest_dists.begin(), k_nearest_dists.end()) - k_nearest_dists.begin();
-                if (temp_dist < k_nearest_dists[temp_index])
+                temp_index = std::max_element(k_nearest_dists_.begin(), k_nearest_dists_.end()) - k_nearest_dists_.begin();
+                if (temp_dist < k_nearest_dists_[temp_index])
                 {
-                    k_nearest_dists.erase(k_nearest_dists.begin() + temp_index);
-                    k_nearest_pts.erase(k_nearest_pts.begin() + temp_index);
+                    k_nearest_dists_.erase(k_nearest_dists_.begin() + temp_index);
+                    k_nearest_pts_.erase(k_nearest_pts_.begin() + temp_index);
 
-                    k_nearest_dists.push_back(temp_dist);
-                    k_nearest_pts.push_back(temp_node->param);
+                    k_nearest_dists_.push_back(temp_dist);
+                    k_nearest_pts_.push_back(temp_node->param);
                     visited_node.push_back(temp_node);
                 }
             }
@@ -446,9 +446,9 @@ void KDTree<T>::getKNearestPointsInBranch(T* _pt, int _k, Node<T>* _branch_node,
             continue;
         }
 
-        temp_index = std::max_element(k_nearest_dists.begin(), k_nearest_dists.end()) - k_nearest_dists.begin();
-        if (k_nearest_dists.size() < _k ||
-            abs(_pt->data_[temp_node->split_dim_] - temp_node->param->data_[temp_node->split_dim_]) < k_nearest_dists[temp_index])
+        temp_index = std::max_element(k_nearest_dists_.begin(), k_nearest_dists_.end()) - k_nearest_dists_.begin();
+        if (k_nearest_dists_.size() < _k ||
+            abs(_pt->data_[temp_node->split_dim_] - temp_node->param->data_[temp_node->split_dim_]) < k_nearest_dists_[temp_index])
         {
             visited_node.push_back(temp_node);
             temp_node = findNearestLeaf(_pt, temp_node_another);
