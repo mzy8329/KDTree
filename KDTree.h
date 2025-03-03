@@ -7,7 +7,7 @@
 #include <iostream>
 #include <chrono>
 
-float calcDistance(Eigen::VectorXf* _p1, Eigen::VectorXf* _p2, int _dim);
+float calcDistance(const Eigen::VectorXf& _p1, const Eigen::VectorXf& _p2, int _dim);
 
 template <typename T>
 class Node
@@ -77,12 +77,12 @@ protected:
     std::vector<T*> k_nearest_pts_;
 };
 
-float calcDistance(Eigen::VectorXf* _p1, Eigen::VectorXf* _p2, int _dim)
+inline float calcDistance(const Eigen::VectorXf& _p1, const Eigen::VectorXf& _p2, int _dim)
 {
     float temp = 0;
     for (int i = 0; i < _dim; i++)
     {
-        temp += ((*_p1)[i] - (*_p2)[i]) * ((*_p1)[i] - (*_p2)[i]);
+        temp += (_p1[i] - _p2[i]) * ((_p1)[i] - _p2[i]);
     }
     return std::sqrt(temp);
 }
@@ -360,7 +360,7 @@ void KDTree<T>::getPointsInRangeInBranch(T* _pt, float _range, Node<T>* _branch_
 
         if (!temp_node->deactivate)
         {
-            temp_dist = calcDistance(&temp_node->param->data_, &_pt->data_, split_dim_);
+            temp_dist = calcDistance(temp_node->param->data_, _pt->data_, split_dim_);
             if (temp_dist <= _range)
             {
                 k_nearest_pts_.push_back(temp_node->param);
@@ -416,7 +416,7 @@ void KDTree<T>::getKNearestPointsInBranch(T* _pt, int _k, Node<T>* _branch_node,
 
         if (!temp_node->deactivate)
         {
-            temp_dist = calcDistance(&temp_node->param->data_, &_pt->data_, split_dim_);
+            temp_dist = calcDistance(temp_node->param->data_, _pt->data_, split_dim_);
             if (k_nearest_dists_.size() < _k)
             {
                 k_nearest_dists_.push_back(temp_dist);
