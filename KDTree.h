@@ -559,28 +559,18 @@ Node<T>* KDTree<T>::buildTree(std::vector<T*>* _data_ptr_list, Node<T>* _parent_
 
     std::vector<T*> left_sub_tree;
     std::vector<T*> right_sub_tree;
-    Node<T>* node = nullptr;
 
-    if (data_size % 2 != 0)
+    int mid = data_size / 2;
+    for (size_t i = 0; i < mid; ++i)
     {
-        for (int i = 0; i < data_size / 2; i++)
-        {
-            left_sub_tree.push_back((*_data_ptr_list)[i]);
-            right_sub_tree.push_back((*_data_ptr_list)[data_size - 1 - i]);
-        }
-        node = new Node<T>((*_data_ptr_list)[data_size / 2], s_dim);
+        left_sub_tree.push_back((*_data_ptr_list)[i]);
     }
-    else
+    for (size_t i = mid + 1; i < data_size; ++i)
     {
-        for (int i = 0; i < data_size / 2 - 1; i++)
-        {
-            left_sub_tree.push_back((*_data_ptr_list)[i]);
-            right_sub_tree.push_back((*_data_ptr_list)[data_size - 1 - i]);
-        }
-        left_sub_tree.push_back((*_data_ptr_list)[data_size / 2 - 1]);
-        node = new Node<T>((*_data_ptr_list)[data_size / 2], s_dim);
+        right_sub_tree.push_back((*_data_ptr_list)[i]);
     }
 
+    Node<T>* node = new Node<T>((*_data_ptr_list)[mid], s_dim);
     node->parent = _parent_node;
     node->left = buildTree(&left_sub_tree, node);
     node->right = buildTree(&right_sub_tree, node);
