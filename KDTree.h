@@ -37,25 +37,25 @@ class KDTree
 {
 public:
     KDTree() { root_node_ = nullptr; }
-    KDTree(std::vector<T*> _data_ptr_list, int _split_dims = -1);
-    KDTree(std::vector<T> _data_list, int _split_dims = -1);
+    KDTree(const std::vector<T*>& _data_ptr_list, int _split_dims = -1);
+    KDTree(const std::vector<T>& _data_list, int _split_dims = -1);
     ~KDTree();
 
     void setData(std::vector<T*> _data_ptr_list, int _split_dims = -1);
     void setData(std::vector<T> _data_ptr_list, int _split_dims = -1);
-    void insertNode(T* _param);
-    void removeNode(T* _param, bool _same_address = false);
+    void insertNode(const T* _param);
+    void removeNode(const T* _param, bool _same_address = false);
 
-    T* getNearestPoint(T* _pt);
-    std::vector<T*> getPointsInRange(T* _pt, float _range);
-    std::vector<T*> getKNearestPoints(T* _pt, int _k);
+    T* getNearestPoint(const T* _pt);
+    std::vector<T*> getPointsInRange(const T* _pt, float _range);
+    std::vector<T*> getKNearestPoints(const T* _pt, int _k);
 
 protected:
-    void getPointsInRangeInBranch(T* _pt, float _range, Node<T>* _branch_node, Node<T>* _start_node = nullptr);
-    void getKNearestPointsInBranch(T* _pt, int _k, Node<T>* _branch_node, Node<T>* _start_node = nullptr);
+    void getPointsInRangeInBranch(const T* _pt, float _range, Node<T>* _branch_node, Node<T>* _start_node = nullptr);
+    void getKNearestPointsInBranch(const T* _pt, int _k, Node<T>* _branch_node, Node<T>* _start_node = nullptr);
 
-    Node<T>* findNearestLeaf(T* _pt, Node<T>* _branch_node, bool _same_address = false);
-    Node<T>* findAnotherSuBranch(Node<T>* _parent, Node<T>* _sub_node);
+    Node<T>* findNearestLeaf(const T* _pt, Node<T>* _branch_node, bool _same_address = false);
+    Node<T>* findAnotherSuBranch(const Node<T>* _parent, const Node<T>* _sub_node);
 
     void clear();
     Node<T>* buildTree(std::vector<T*>* _data_list, Node<T>* _parent_node);
@@ -88,14 +88,14 @@ inline float calcDistance(const Eigen::VectorXf& _p1, const Eigen::VectorXf& _p2
 }
 
 template <typename T>
-KDTree<T>::KDTree(std::vector<T*> _data_ptr_list, int _split_dims)
+KDTree<T>::KDTree(const std::vector<T*>& _data_ptr_list, int _split_dims)
 {
     root_node_ = nullptr;
     setData(_split_dims, _data_ptr_list);
 }
 
 template <typename T>
-KDTree<T>::KDTree(std::vector<T> _data_list, int _split_dims)
+KDTree<T>::KDTree(const std::vector<T>& _data_list, int _split_dims)
 {
     root_node_ = nullptr;
     setData(_data_list, _split_dims);
@@ -147,7 +147,7 @@ void KDTree<T>::setData(std::vector<T> _data_list, int _split_dims)
 }
 
 template <typename T>
-void KDTree<T>::insertNode(T* _param)
+void KDTree<T>::insertNode(const T* _param)
 {
     if (root_node_ == nullptr)
     {
@@ -189,7 +189,7 @@ void KDTree<T>::insertNode(T* _param)
 }
 
 template <typename T>
-void KDTree<T>::removeNode(T* _node, bool _same_address)
+void KDTree<T>::removeNode(const T* _node, bool _same_address)
 {
     Node<T>* temp_node = findNearestLeaf(_node, root_node_, _same_address);
     if (temp_node == nullptr)
@@ -255,7 +255,7 @@ void KDTree<T>::removeNode(T* _node, bool _same_address)
 
 // public -------------------- find neighbor points --------------------//
 template <typename T>
-T* KDTree<T>::getNearestPoint(T* _pt)
+T* KDTree<T>::getNearestPoint(const T* _pt)
 {
     std::vector<T*> temp_ans = getKNearestPoints(_pt, 1);
     if (temp_ans.size() > 0)
@@ -269,7 +269,7 @@ T* KDTree<T>::getNearestPoint(T* _pt)
 }
 
 template <typename T>
-std::vector<T*> KDTree<T>::getPointsInRange(T* _pt, float _range)
+std::vector<T*> KDTree<T>::getPointsInRange(const T* _pt, float _range)
 {
     if (_range <= 0)
     {
@@ -302,7 +302,7 @@ std::vector<T*> KDTree<T>::getPointsInRange(T* _pt, float _range)
 }
 
 template <typename T>
-std::vector<T*> KDTree<T>::getKNearestPoints(T* _pt, int _k)
+std::vector<T*> KDTree<T>::getKNearestPoints(const T* _pt, int _k)
 {
     if (_k > data_ptr_list_.size() || _k == 0 || data_ptr_list_.size() == 0)
     {
@@ -336,7 +336,7 @@ std::vector<T*> KDTree<T>::getKNearestPoints(T* _pt, int _k)
 
 // protected -------------------- find neighbor points --------------------//
 template <typename T>
-void KDTree<T>::getPointsInRangeInBranch(T* _pt, float _range, Node<T>* _branch_node, Node<T>* _start_node)
+void KDTree<T>::getPointsInRangeInBranch(const T* _pt, float _range, Node<T>* _branch_node, Node<T>* _start_node)
 {
     Node<T>* temp_node = _start_node;
     Node<T>* temp_node_last = nullptr;
@@ -391,7 +391,7 @@ void KDTree<T>::getPointsInRangeInBranch(T* _pt, float _range, Node<T>* _branch_
 }
 
 template <typename T>
-void KDTree<T>::getKNearestPointsInBranch(T* _pt, int _k, Node<T>* _branch_node, Node<T>* _start_node)
+void KDTree<T>::getKNearestPointsInBranch(const T* _pt, int _k, Node<T>* _branch_node, Node<T>* _start_node)
 {
     Node<T>* temp_node = _start_node;
     Node<T>* temp_node_last = nullptr;
@@ -464,7 +464,7 @@ void KDTree<T>::getKNearestPointsInBranch(T* _pt, int _k, Node<T>* _branch_node,
 
 // protected -------------------- find neighbor points --------------------//
 template <typename T>
-Node<T>* KDTree<T>::findNearestLeaf(T* _pt, Node<T>* _branch_node, bool _same_address)
+Node<T>* KDTree<T>::findNearestLeaf(const T* _pt, Node<T>* _branch_node, bool _same_address)
 {
     Node<T>* temp_node = _branch_node;
     if (_branch_node == nullptr)
@@ -509,7 +509,7 @@ Node<T>* KDTree<T>::findNearestLeaf(T* _pt, Node<T>* _branch_node, bool _same_ad
 }
 
 template <typename T>
-Node<T>* KDTree<T>::findAnotherSuBranch(Node<T>* _parent, Node<T>* _sub_node)
+Node<T>* KDTree<T>::findAnotherSuBranch(const Node<T>* _parent, const Node<T>* _sub_node)
 {
     if (_sub_node == _parent->left)
     {

@@ -1,9 +1,9 @@
 # KDTree
 该KDTree的输入为std::vector\<T*\>, 其中T为任意 <span style="color:red">包含数据成员为 Eigen::VectorXf data</span> 的类
 ### 特点
-1. 输入为对象的地址，返回值为对象的指针，可直接对对象进行修改
-2. 针对不同问题，仅需声明不同的对象（包含data），无需额外进行匹配
-3. 默认按照类中data所有的数据来划分数据，可通过参数 *_split_dim* 指定KDTree根据data的划分维数
+1. 输入为对象指针的vector，返回值为对象的指针，可直接对返回对象进行修改,无需额外进行匹配
+2. 针对不同问题，仅需声明不同的对象（包含data_）
+3. 默认按照类中data_所有的数据来划分数据，可通过参数 *_split_dim* 指定KDTree根据data_的前几维进行划分
 
 ### 使用方法
 
@@ -12,9 +12,9 @@
 class param
 {
 public:
-    param(Eigen::VectorXf _data) : data(_data) { ; }
+    param(Eigen::VectorXf _data) : data_(_data) { ; }
     ~param() { ; }
-    Eigen::VectorXf data;
+    Eigen::VectorXf data_;
 };
 ```
 
