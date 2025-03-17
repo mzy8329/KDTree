@@ -79,12 +79,7 @@ protected:
 
 inline float calcDistance(const Eigen::VectorXf& _p1, const Eigen::VectorXf& _p2, int _dim)
 {
-    float temp = 0;
-    for (int i = 0; i < _dim; i++)
-    {
-        temp += (_p1[i] - _p2[i]) * ((_p1)[i] - _p2[i]);
-    }
-    return std::sqrt(temp);
+    return (_p1 - _p2).head(_dim).norm();
 }
 
 template <typename T>
